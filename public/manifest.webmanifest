@@ -1,0 +1,17 @@
+{
+  "name": "Plínolog",
+  "short_name": "Plínolog",
+  "description": "Krmení, plíny a vitamíny na jednom místě.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14121a",
+  "theme_color": "#14121a",
+  "lang": "cs",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

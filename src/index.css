@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/*
+ * Noční paleta je výchozí — appka se používá hlavně ve tmě a bílé pozadí
+ * ve 3 ráno oslepí. Světlý motiv jde přepnout v hlavičce (html.light).
+ */
+:root {
+  --bg: #14121a;
+  --surface: #1e1b26;
+  --surface-2: #272332;
+  --border: #362f45;
+  --text: #f2edf7;
+  --muted: #a79fb8;
+  --accent: #f4a6b8;
+  --accent-strong: #f07f9a;
+  --accent-ink: #2a1119;
+  --ok: #7fd1a8;
+  --danger: #f08b8b;
+}
+
+html.light {
+  --bg: #fdf7f9;
+  --surface: #ffffff;
+  --surface-2: #f7eef2;
+  --border: #ecdde4;
+  --text: #2a2233;
+  --muted: #766b81;
+  --accent: #e4718f;
+  --accent-strong: #d1567a;
+  --accent-ink: #ffffff;
+  --ok: #2f9d6b;
+  --danger: #cc4b4b;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-ink: var(--accent-ink);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
+}
+
+html {
+  color-scheme: dark;
+  background: var(--bg);
+}
+html.light {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* nechceme, aby dvojklik na badge zoomoval */
+  touch-action: manipulation;
+}
+
+/* Bezpečné zóny na iPhonu (PWA na celou obrazovku) */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-pop {
+  animation: pop-in 0.18s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade {
+  animation: fade-in 0.15s ease-out;
+}
