@@ -26,7 +26,7 @@ export function SessionDialog({
   initialStartedAt,
   initialEndedAt,
 }: Props) {
-  const [startedAt, setStartedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(() => Date.now());
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [picked, setPicked] = useState<Record<string, number | null>>({});

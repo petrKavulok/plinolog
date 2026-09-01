@@ -40,7 +40,8 @@ createRoot(document.getElementById("root")!).render(
 );
 
 // Service worker jen kvůli instalovatelnosti PWA (offline zápis zatím neumíme).
-if ("serviceWorker" in navigator) {
+// V devu ho neregistrujeme, aby nekešoval rozpracované soubory.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     void navigator.serviceWorker.register("/sw.js");
   });

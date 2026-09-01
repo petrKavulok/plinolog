@@ -91,7 +91,7 @@ export function AdminPage() {
         {actions.map((action, index) => (
           <li
             key={action.id}
-            className={`flex items-center gap-3 rounded-3xl border border-line bg-surface p-3 ${
+            className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-3xl border border-line bg-surface p-3 ${
               action.archived ? "opacity-55" : ""
             }`}
           >
@@ -99,8 +99,8 @@ export function AdminPage() {
               {action.emoji}
             </span>
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold">
+            <div className="min-w-0 flex-1 basis-40">
+              <p className="font-semibold">
                 {action.label}
                 {action.archived && (
                   <span className="ml-2 rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
@@ -108,10 +108,11 @@ export function AdminPage() {
                   </span>
                 )}
               </p>
-              <p className="truncate text-xs text-muted">{describe(action)}</p>
+              <p className="text-xs text-muted">{describe(action)}</p>
             </div>
 
-            <div className="flex shrink-0 items-center">
+            {/* Na úzkém displeji se tlačítka zalomí pod text, ať se název nekrátí. */}
+            <div className="ml-auto flex shrink-0 items-center">
               <IconButton
                 label="Nahoru"
                 disabled={index === 0}
@@ -163,7 +164,7 @@ export function AdminPage() {
 function describe(action: ActionType): string {
   const parts: string[] = [];
   if (action.kind === "quantity") {
-    parts.push(`množství${action.unit ? ` v ${action.unit}` : ""}`);
+    parts.push(`množství${action.unit ? ` (${action.unit})` : ""}`);
     if (action.presets.length) parts.push(action.presets.map(formatNumber).join(" / "));
   } else {
     parts.push("jen odkliknutí");
