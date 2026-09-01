@@ -21,7 +21,7 @@ const Input = z.object({
 
 export const GET = route(async (req) => {
   await requireUser(req);
-  const rows = await db
+  const rows = await db()
     .select()
     .from(actionTypes)
     .where(eq(actionTypes.deleted, false))
@@ -33,7 +33,7 @@ export const POST = route(async (req) => {
   await requireUser(req);
   const input = await parseBody(req, Input);
   const now = Date.now();
-  const [row] = await db
+  const [row] = await db()
     .insert(actionTypes)
     .values({ id: newId(), ...input, createdAt: now, updatedAt: now })
     .returning();
@@ -44,7 +44,7 @@ export const PATCH = route(async (req) => {
   await requireUser(req);
   const id = idFromUrl(req);
   const input = await parseBody(req, Input.partial());
-  const [row] = await db
+  const [row] = await db()
     .update(actionTypes)
     .set({ ...input, updatedAt: Date.now() })
     .where(and(eq(actionTypes.id, id), eq(actionTypes.deleted, false)))
@@ -58,7 +58,7 @@ export const PATCH = route(async (req) => {
 export const DELETE = route(async (req) => {
   await requireUser(req);
   const id = idFromUrl(req);
-  await db
+  await db()
     .update(actionTypes)
     .set({ deleted: true, updatedAt: Date.now() })
     .where(eq(actionTypes.id, id));

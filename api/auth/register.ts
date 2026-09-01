@@ -29,7 +29,7 @@ export const POST = route(async (req) => {
     passwordHash: await bcrypt.hash(body.password, 10),
     createdAt: Date.now(),
   };
-  await db.insert(schema.users).values(user);
+  await db().insert(schema.users).values(user);
 
   const session = { id: user.id, username: user.username, displayName: user.displayName };
   return json(

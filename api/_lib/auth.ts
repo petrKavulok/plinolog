@@ -8,7 +8,8 @@ const MAX_AGE = 60 * 60 * 24 * 90; // 90 dní — rodič se nemá v noci přihla
 
 function secret() {
   const value = process.env.AUTH_SECRET;
-  if (!value) throw new Error("Chybí AUTH_SECRET (viz ENV.sample).");
+  // fail() místo throw — projde přes route() jako čitelná JSON chyba.
+  if (!value) fail(500, "Na serveru chybí AUTH_SECRET — doplň ji ve Vercel a nasaď znovu.");
   return new TextEncoder().encode(value);
 }
 
@@ -65,7 +66,7 @@ export async function requireUser(req: Request): Promise<SessionUser> {
 }
 
 export async function findUserByUsername(username: string) {
-  const [row] = await db
+  const [row] = await db()
     .select()
     .from(schema.users)
     .where(eq(schema.users.username, username.trim().toLowerCase()))

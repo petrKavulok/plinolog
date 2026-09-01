@@ -20,7 +20,7 @@ const Input = z.object({
 
 /** Načte session + jejich odkliknuté akce + autora. */
 async function loadSessions(sinceMs: number, limit: number) {
-  const rows = await db
+  const rows = await db()
     .select({
       id: careSessions.id,
       userId: careSessions.userId,
@@ -38,7 +38,7 @@ async function loadSessions(sinceMs: number, limit: number) {
 
   if (rows.length === 0) return [];
 
-  const entries = await db
+  const entries = await db()
     .select()
     .from(sessionEntries)
     .where(
@@ -72,7 +72,7 @@ export const POST = route(async (req) => {
   const now = Date.now();
   const id = newId();
 
-  await db.insert(careSessions).values({
+  await db().insert(careSessions).values({
     id,
     userId: user.id,
     startedAt: input.startedAt,
@@ -82,7 +82,7 @@ export const POST = route(async (req) => {
     updatedAt: now,
   });
   if (input.entries.length > 0) {
-    await db.insert(sessionEntries).values(
+    await db().insert(sessionEntries).values(
       input.entries.map((e) => ({
         id: newId(),
         sessionId: id,
@@ -102,7 +102,7 @@ export const PATCH = route(async (req) => {
   const input = await parseBody(req, Input.partial());
   const now = Date.now();
 
-  const [row] = await db
+  const [row] = await db()
     .update(careSessions)
     .set({
       ...(input.startedAt !== undefined && { startedAt: input.startedAt }),
@@ -116,9 +116,9 @@ export const PATCH = route(async (req) => {
 
   // Odkliknuté akce se přepisují celé — dialog vždy posílá aktuální stav.
   if (input.entries) {
-    await db.delete(sessionEntries).where(eq(sessionEntries.sessionId, id));
+    await db().delete(sessionEntries).where(eq(sessionEntries.sessionId, id));
     if (input.entries.length > 0) {
-      await db.insert(sessionEntries).values(
+      await db().insert(sessionEntries).values(
         input.entries.map((e) => ({
           id: newId(),
           sessionId: id,
@@ -136,7 +136,7 @@ export const PATCH = route(async (req) => {
 export const DELETE = route(async (req) => {
   await requireUser(req);
   const id = idFromUrl(req);
-  await db
+  await db()
     .update(careSessions)
     .set({ deleted: true, updatedAt: Date.now() })
     .where(eq(careSessions.id, id));
