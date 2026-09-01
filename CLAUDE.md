@@ -11,8 +11,15 @@ Uživatelé jsou dva rodiče, appka se používá hlavně v noci na telefonu.
 - **Mazání je soft delete** (`deleted` + `updatedAt`) — kvůli pozdějšímu syncu.
 - **UX pro unaveného rodiče**: cíle na dotek min. 44 px, tmavý motiv jako
   výchozí, žádné vícekrokové průvodce. Nový záznam musí jít uložit na 2–3 klepnutí.
-- API handlery jsou Web standard (`export const GET = route(async (req) => …)`),
-  ne Node `(req, res)`. `route()` z `api/_lib/http.ts` řeší chyby a JSON.
+- **Funkce v `api/` musí mít `export default`** a Node signaturu `(req, res)` —
+  o obojí se stará `route({ GET, POST, … })` z `api/_lib/http.ts`. Pojmenované
+  exporty metod (`export const GET`) jsou konvence Next.js App Routeru a na
+  Vercelu u samostatných funkcí končí na FUNCTION_INVOCATION_FAILED.
+- **Relativní importy v `api/` musí mít příponu `.js`** (`./_lib/http.js`).
+  Projekt je ESM (`"type": "module"`), takže Node bez přípony modul nenajde
+  a funkce spadne už při načtení. TS si `.js` namapuje zpět na `.ts`.
+- Uvnitř handlerů se píše proti Web API (`Request` → `Response`), převod
+  na Node dělá `route()`.
 
 ## Příkazy
 
@@ -24,6 +31,11 @@ npm run db:seed    # výchozí sada akcí
 ```
 
 Porty 3000 a 3100 jsou na tomhle stroji obsazené — proto 4321.
+
+## Diagnostika
+
+`GET /api/health` řekne, které env proměnné funkce vidí (jen true/false).
+Když padá všechno včetně health, problém je v nasazení funkcí, ne v konfiguraci.
 
 ## Známé TODO
 
