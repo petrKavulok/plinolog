@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { SignJWT, jwtVerify } from "jose";
-import { db, schema } from "./db";
-import { fail } from "./http";
+import { db, schema } from "./db.js";
+import { fail } from "./http.js";
 
 const COOKIE = "plinolog_session";
 const MAX_AGE = 60 * 60 * 24 * 90; // 90 dní — rodič se nemá v noci přihlašovat

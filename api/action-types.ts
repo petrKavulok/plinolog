@@ -1,8 +1,8 @@
 import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { requireUser } from "./_lib/auth";
-import { db, schema } from "./_lib/db";
-import { fail, idFromUrl, json, newId, parseBody, route } from "./_lib/http";
+import { requireUser } from "./_lib/auth.js";
+import { db, schema } from "./_lib/db.js";
+import { fail, idFromUrl, json, newId, parseBody, route } from "./_lib/http.js";
 
 const { actionTypes } = schema;
 

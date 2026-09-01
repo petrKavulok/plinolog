@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { createSessionCookie, findUserByUsername } from "../_lib/auth";
-import { db, schema } from "../_lib/db";
-import { fail, json, newId, parseBody, route } from "../_lib/http";
+import { createSessionCookie, findUserByUsername } from "../_lib/auth.js";
+import { db, schema } from "../_lib/db.js";
+import { fail, json, newId, parseBody, route } from "../_lib/http.js";
 
 const Body = z.object({
   username: z.string().trim().min(2, "Jméno musí mít aspoň 2 znaky."),

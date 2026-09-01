@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { fail } from "./http";
-import * as schema from "./schema";
+import { fail } from "./http.js";
+import * as schema from "./schema.js";
 
 type Db = ReturnType<typeof create>;
 let cached: Db | null = null;

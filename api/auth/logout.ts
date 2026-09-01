@@ -1,5 +1,5 @@
-import { clearSessionCookie } from "../_lib/auth";
-import { json, route } from "../_lib/http";
+import { clearSessionCookie } from "../_lib/auth.js";
+import { json, route } from "../_lib/http.js";
 
 export default route({
   POST: async () =>

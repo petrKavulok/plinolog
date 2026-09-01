@@ -1,4 +1,4 @@
-import { json, route } from "./_lib/http";
+import { json, route } from "./_lib/http.js";
 
 /**
  * Diagnostika nasazení. Hlásí jen, jestli proměnná existuje, nikdy hodnotu.

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { createSessionCookie, findUserByUsername } from "../_lib/auth";
-import { fail, json, parseBody, route } from "../_lib/http";
+import { createSessionCookie, findUserByUsername } from "../_lib/auth.js";
+import { fail, json, parseBody, route } from "../_lib/http.js";
 
 const Body = z.object({
   username: z.string().min(1),
