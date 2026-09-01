@@ -7,7 +7,9 @@
     <meta name="description" content="Přehled krmení, přebalování a vitamínů. Sdílené mezi rodiči." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- use-credentials: za Vercel Deployment Protection se manifest jinak
+         stáhne anonymně, skončí na redirectu na SSO a spadne na CORS. -->
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
     <meta name="theme-color" content="#14121a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Plínolog" />
