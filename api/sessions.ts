@@ -56,7 +56,7 @@ async function loadSessions(sinceMs: number, limit: number) {
   }));
 }
 
-export const GET = route(async (req) => {
+const GET = async (req: Request) => {
   await requireUser(req);
   const params = new URL(req.url).searchParams;
   // Výchozí okno: 30 dní zpět — dashboard potřebuje max týdenní statistiky.
@@ -64,9 +64,9 @@ export const GET = route(async (req) => {
   const limit = Math.min(Number(params.get("limit") ?? 500), 1000);
   const since = Date.now() - (Number.isFinite(days) ? days : 30) * 86_400_000;
   return json({ sessions: await loadSessions(since, limit) });
-});
+};
 
-export const POST = route(async (req) => {
+const POST = async (req: Request) => {
   const user = await requireUser(req);
   const input = await parseBody(req, Input);
   const now = Date.now();
@@ -94,9 +94,9 @@ export const POST = route(async (req) => {
   }
 
   return json({ id }, { status: 201 });
-});
+};
 
-export const PATCH = route(async (req) => {
+const PATCH = async (req: Request) => {
   await requireUser(req);
   const id = idFromUrl(req);
   const input = await parseBody(req, Input.partial());
@@ -131,9 +131,9 @@ export const PATCH = route(async (req) => {
   }
 
   return json({ ok: true });
-});
+};
 
-export const DELETE = route(async (req) => {
+const DELETE = async (req: Request) => {
   await requireUser(req);
   const id = idFromUrl(req);
   await db()
@@ -141,4 +141,6 @@ export const DELETE = route(async (req) => {
     .set({ deleted: true, updatedAt: Date.now() })
     .where(eq(careSessions.id, id));
   return json({ ok: true });
-});
+};
+
+export default route({ GET, POST, PATCH, DELETE });

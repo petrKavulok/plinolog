@@ -19,7 +19,7 @@ const Input = z.object({
   archived: z.boolean().default(false),
 });
 
-export const GET = route(async (req) => {
+const GET = async (req: Request) => {
   await requireUser(req);
   const rows = await db()
     .select()
@@ -27,9 +27,9 @@ export const GET = route(async (req) => {
     .where(eq(actionTypes.deleted, false))
     .orderBy(asc(actionTypes.sortOrder), asc(actionTypes.createdAt));
   return json({ actionTypes: rows });
-});
+};
 
-export const POST = route(async (req) => {
+const POST = async (req: Request) => {
   await requireUser(req);
   const input = await parseBody(req, Input);
   const now = Date.now();
@@ -38,9 +38,9 @@ export const POST = route(async (req) => {
     .values({ id: newId(), ...input, createdAt: now, updatedAt: now })
     .returning();
   return json({ actionType: row }, { status: 201 });
-});
+};
 
-export const PATCH = route(async (req) => {
+const PATCH = async (req: Request) => {
   await requireUser(req);
   const id = idFromUrl(req);
   const input = await parseBody(req, Input.partial());
@@ -51,11 +51,11 @@ export const PATCH = route(async (req) => {
     .returning();
   if (!row) fail(404, "Akce neexistuje.");
   return json({ actionType: row });
-});
+};
 
 // Soft delete — historické záznamy si na akci pořád odkazují, tak ji nesmažeme
 // nadobro; jen zmizí ze seznamů. Pro "už není potřeba" slouží archived.
-export const DELETE = route(async (req) => {
+const DELETE = async (req: Request) => {
   await requireUser(req);
   const id = idFromUrl(req);
   await db()
@@ -63,4 +63,6 @@ export const DELETE = route(async (req) => {
     .set({ deleted: true, updatedAt: Date.now() })
     .where(eq(actionTypes.id, id));
   return json({ ok: true });
-});
+};
+
+export default route({ GET, POST, PATCH, DELETE });

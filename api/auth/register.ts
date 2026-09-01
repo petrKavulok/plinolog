@@ -11,7 +11,8 @@ const Body = z.object({
   inviteCode: z.string(),
 });
 
-export const POST = route(async (req) => {
+export default route({
+  POST: async (req) => {
   const body = await parseBody(req, Body);
 
   // Bez zvacího kódu se nikdo cizí nezaregistruje (appka je jen pro nás dva).
@@ -36,4 +37,5 @@ export const POST = route(async (req) => {
     { user: session },
     { status: 201, headers: { "set-cookie": await createSessionCookie(session) } },
   );
+},
 });

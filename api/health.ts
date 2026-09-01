@@ -1,11 +1,11 @@
+import { json, route } from "./_lib/http";
+
 /**
- * Diagnostika nasazení. Schválně nic neimportuje — když tenhle endpoint
- * odpoví a ostatní ne, je problém v závislostech nebo v env proměnných.
- * Hlásí jen, jestli proměnná existuje, nikdy její hodnotu.
+ * Diagnostika nasazení. Hlásí jen, jestli proměnná existuje, nikdy hodnotu.
  */
-export function GET() {
-  return new Response(
-    JSON.stringify({
+export default route({
+  GET: () =>
+    json({
       ok: true,
       env: {
         DATABASE_URL: Boolean(process.env.DATABASE_URL),
@@ -14,6 +14,4 @@ export function GET() {
       },
       node: process.version,
     }),
-    { headers: { "content-type": "application/json", "cache-control": "no-store" } },
-  );
-}
+});

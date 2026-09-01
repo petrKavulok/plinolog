@@ -25,9 +25,23 @@ export function fail(status: number, message: string): never {
   throw new HttpError(status, message);
 }
 
-/** Obalí handler — vrátí čitelnou JSON chybu místo 500 bez kontextu. */
-export function route(handler: (req: Request) => Promise<Response>) {
+type Handler = (req: Request) => Response | Promise<Response>;
+
+/**
+ * Poskládá z metod jeden handler a vyexportuje se jako `default`.
+ *
+ * Pozor: `export const GET/POST` je konvence Next.js App Routeru. Runtime
+ * @vercel/node u samostatných souborů v `api/` hledá **default export** —
+ * bez něj funkce spadne na FUNCTION_INVOCATION_FAILED.
+ *
+ * Navíc obalí všechno do try/catch, aby uživatel dostal čitelnou JSON chybu.
+ */
+export function route(methods: Partial<Record<string, Handler>>): Handler {
   return async (req: Request): Promise<Response> => {
+    const handler = methods[req.method];
+    if (!handler) {
+      return json({ error: `Metoda ${req.method} tady není.` }, { status: 405 });
+    }
     try {
       return await handler(req);
     } catch (err) {

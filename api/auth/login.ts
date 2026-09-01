@@ -8,7 +8,8 @@ const Body = z.object({
   password: z.string().min(1),
 });
 
-export const POST = route(async (req) => {
+export default route({
+  POST: async (req) => {
   const { username, password } = await parseBody(req, Body);
   const user = await findUserByUsername(username);
 
@@ -23,4 +24,5 @@ export const POST = route(async (req) => {
     { user: session },
     { headers: { "set-cookie": await createSessionCookie(session) } },
   );
+},
 });
