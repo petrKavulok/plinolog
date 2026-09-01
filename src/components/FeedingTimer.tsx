@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { formatStopwatch, formatTime } from "../lib/format";
 import { playAlarm, unlockAudio, vibrate } from "../lib/sound";
+import { useWakeLock } from "../state/useWakeLock";
 import { Button } from "./ui";
 
 const KEY = "plinolog:timer";
@@ -54,6 +55,9 @@ export function FeedingTimer({
   );
   // Ke kterým stopkám už zvonění proběhlo — ať se neopakuje při překreslení.
   const alarmedFor = useRef<number | null>(null);
+
+  // Dokud stopky běží, displej nezhasne — jinak by systém uspal časovač.
+  useWakeLock(startedAt !== null);
 
   useEffect(() => {
     if (startedAt === null) return;

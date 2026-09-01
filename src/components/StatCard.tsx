@@ -3,7 +3,10 @@ import type { ActionStat } from "../lib/stats";
 
 /** Dlaždice na dashboardu: kolikrát dnes / kolik ml / kdy naposledy. */
 export function StatCard({ stat }: { stat: ActionStat }) {
-  const { action, count, sum, lastAt, goalValue, progress } = stat;
+  const { action, count, sum, lastAt, lastInPeriod, goalValue, progress } = stat;
+  // U minulých období nedává smysl hlásit dnešní výskyt — držíme se období.
+  const past = stat.periodLabel === "včera" || stat.periodLabel === "minulý týden";
+  const shown = past ? lastInPeriod : lastAt;
   const quantity = action.kind === "quantity";
   const value = quantity ? sum : count;
   const unit = quantity ? (action.unit ?? "") : plural(count, "krát", "krát", "krát");
@@ -44,8 +47,7 @@ export function StatCard({ stat }: { stat: ActionStat }) {
       )}
 
       <span className="text-xs text-muted">
-        {action.goalPeriod === "week" ? "tento týden · " : "dnes · "}
-        {lastAt ? formatAgo(lastAt) : "zatím nic"}
+        {stat.periodLabel} · {shown ? formatAgo(shown) : "nic"}
       </span>
     </div>
   );

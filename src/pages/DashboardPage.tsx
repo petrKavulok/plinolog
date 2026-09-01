@@ -5,7 +5,7 @@ import { SessionList } from "../components/SessionList";
 import { StatCard } from "../components/StatCard";
 import { ErrorNote, Spinner } from "../components/ui";
 import { api } from "../lib/api";
-import { summarize } from "../lib/stats";
+import { summarize, type StatsDay } from "../lib/stats";
 import type { CareSession } from "../lib/types";
 import { useData } from "../state/data";
 
@@ -17,8 +17,12 @@ export function DashboardPage() {
   const [editing, setEditing] = useState<CareSession | null>(null);
   const [prefill, setPrefill] = useState<{ startedAt?: number; endedAt?: number | null }>({});
   const [actionError, setActionError] = useState<string | null>(null);
+  const [statsDay, setStatsDay] = useState<StatsDay>("today");
 
-  const stats = useMemo(() => summarize(actions, sessions), [actions, sessions]);
+  const stats = useMemo(
+    () => summarize(actions, sessions, statsDay),
+    [actions, sessions, statsDay],
+  );
 
   function openNew(prefillValues: typeof prefill = {}) {
     setEditing(null);
@@ -57,10 +61,25 @@ export function DashboardPage() {
       <ErrorNote>{error ?? actionError}</ErrorNote>
 
       {stats.length > 0 && (
-        <section className="grid grid-cols-2 gap-3">
-          {stats.map((stat) => (
-            <StatCard key={stat.action.id} stat={stat} />
-          ))}
+        <section className="flex flex-col gap-3">
+          {/* Přepínač období nad dlaždicemi — ráno se hodí porovnat s včerejškem. */}
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-surface-2 p-1">
+            <PeriodTab active={statsDay === "today"} onClick={() => setStatsDay("today")}>
+              Dnes
+            </PeriodTab>
+            <PeriodTab
+              active={statsDay === "yesterday"}
+              onClick={() => setStatsDay("yesterday")}
+            >
+              Včera
+            </PeriodTab>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => (
+              <StatCard key={stat.action.id} stat={stat} />
+            ))}
+          </div>
         </section>
       )}
 
@@ -96,5 +115,28 @@ export function DashboardPage() {
         initialEndedAt={prefill.endedAt ?? null}
       />
     </div>
+  );
+}
+
+function PeriodTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex min-h-10 items-center justify-center rounded-xl text-sm font-semibold transition ${
+        active ? "bg-surface text-ink shadow-sm" : "text-muted"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
