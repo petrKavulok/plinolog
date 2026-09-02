@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
-import { formatDuration, fromLocalInput, toLocalInput } from "../lib/format";
+import { formatDuration } from "../lib/format";
+import { DayTimePicker } from "./DayTimePicker";
 import type { ActionType, CareSession, SessionEntry } from "../lib/types";
 import { Button, ErrorNote, Field, Modal, inputClass } from "./ui";
 import { ActionBadge, type PickedEntry } from "./ActionBadge";
@@ -152,38 +153,40 @@ export function SessionDialog({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Začátek">
-            <input
-              type="datetime-local"
-              value={toLocalInput(startedAt)}
-              onChange={(e) => setStartedAt(fromLocalInput(e.target.value))}
-              className={inputClass}
-            />
-          </Field>
-          <Field label="Konec">
-            <input
-              type="datetime-local"
-              value={endedAt === null ? "" : toLocalInput(endedAt)}
-              onChange={(e) =>
-                setEndedAt(e.target.value ? fromLocalInput(e.target.value) : null)
-              }
-              className={inputClass}
-            />
-          </Field>
-        </div>
+        <div className="flex flex-col gap-3">
+          <DayTimePicker label="Začátek" value={startedAt} onChange={setStartedAt} />
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="surface" onClick={() => setStartedAt(Date.now())}>
-            Začátek = teď
-          </Button>
-          <Button variant="surface" onClick={() => setEndedAt(Date.now())}>
-            Konec = teď
-          </Button>
-          {endedAt !== null && (
-            <span className="flex items-center px-2 text-sm text-muted">
-              trvalo {formatDuration(startedAt, endedAt)}
-            </span>
+          {endedAt === null ? (
+            <div className="flex flex-wrap gap-2">
+              <Button variant="surface" onClick={() => setStartedAt(Date.now())}>
+                Začátek = teď
+              </Button>
+              <Button variant="surface" onClick={() => setEndedAt(Date.now())}>
+                Přidat konec
+              </Button>
+            </div>
+          ) : (
+            <>
+              <DayTimePicker label="Konec" value={endedAt} onChange={setEndedAt} />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="surface" onClick={() => setStartedAt(Date.now())}>
+                  Začátek = teď
+                </Button>
+                <Button variant="surface" onClick={() => setEndedAt(Date.now())}>
+                  Konec = teď
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setEndedAt(null)}
+                  className="min-h-11 px-2 text-sm text-muted hover:text-ink"
+                >
+                  Bez konce
+                </button>
+                <span className="text-sm text-muted">
+                  trvalo {formatDuration(startedAt, endedAt)}
+                </span>
+              </div>
+            </>
           )}
         </div>
 

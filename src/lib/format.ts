@@ -69,10 +69,39 @@ export const startOfWeek = (ms: number) => {
   return d.getTime();
 };
 
-/** Hodnota pro <input type="datetime-local"> v místním čase. */
-export function toLocalInput(ms: number): string {
-  const d = new Date(ms - new Date(ms).getTimezoneOffset() * 60_000);
-  return d.toISOString().slice(0, 16);
+/** Na kolik minut se zaokrouhlují ručně zadané časy. */
+export const TIME_STEP_MIN = 10;
+
+/** "HH:MM" pro <input type="time">. */
+export function toTimeInput(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-export const fromLocalInput = (value: string) => new Date(value).getTime();
+/** "YYYY-MM-DD" pro <input type="date">. */
+export function toDateInput(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Nasadí čas "HH:MM" na daný den, zaokrouhlený na desetiminutovky. */
+export function withTime(dayMs: number, time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return dayMs;
+  const d = new Date(dayMs);
+  d.setHours(h, Math.round(m / TIME_STEP_MIN) * TIME_STEP_MIN, 0, 0);
+  return d.getTime();
+}
+
+/** Přenese čas z původní hodnoty na jiný den. */
+export function withDay(originalMs: number, dayMs: number): number {
+  const src = new Date(originalMs);
+  const d = new Date(dayMs);
+  d.setHours(src.getHours(), src.getMinutes(), 0, 0);
+  return d.getTime();
+}
+
+export const fromDateInput = (value: string) => {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d).getTime();
+};
