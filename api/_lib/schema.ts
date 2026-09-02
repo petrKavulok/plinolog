@@ -42,6 +42,8 @@ export const actionTypes = pgTable("action_type", {
     .$type<"none" | "day" | "week">()
     .default("day"),
   goalValue: real("goal_value"),
+  // u kojení dává smysl zvážit miminko před a po (rozdíl ≈ vypité ml)
+  weighing: boolean("weighing").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   // "zrušená" akce — zůstane u historických záznamů, ale nenabízí se
   archived: boolean("archived").notNull().default(false),
@@ -84,6 +86,9 @@ export const sessionEntries = pgTable(
       .notNull()
       .references(() => actionTypes.id, { onDelete: "restrict" }),
     value: real("value"),
+    // váha miminka v gramech, jen u akcí s zapnutým vážením
+    weightBefore: real("weight_before"),
+    weightAfter: real("weight_after"),
     createdAt: bigint("created_at", { mode: "number" }).notNull(),
   },
   (t) => [index("session_entry_session_idx").on(t.sessionId)],

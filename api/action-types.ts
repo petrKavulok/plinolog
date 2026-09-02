@@ -15,6 +15,7 @@ const Input = z.object({
   defaultValue: z.number().nonnegative().nullable().default(null),
   goalPeriod: z.enum(["none", "day", "week"]),
   goalValue: z.number().nonnegative().nullable().default(null),
+  weighing: z.boolean().default(false),
   sortOrder: z.number().int().default(0),
   archived: z.boolean().default(false),
 });

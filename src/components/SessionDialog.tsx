@@ -3,7 +3,7 @@ import { api } from "../lib/api";
 import { formatDuration, fromLocalInput, toLocalInput } from "../lib/format";
 import type { ActionType, CareSession, SessionEntry } from "../lib/types";
 import { Button, ErrorNote, Field, Modal, inputClass } from "./ui";
-import { ActionBadge } from "./ActionBadge";
+import { ActionBadge, type PickedEntry } from "./ActionBadge";
 
 type Props = {
   open: boolean;
@@ -15,6 +15,8 @@ type Props = {
   /** předvyplněný začátek (běžící stopky) */
   initialStartedAt?: number;
   initialEndedAt?: number | null;
+  /** váha zadaná před krmením u stopek, v gramech */
+  initialWeightBefore?: number | null;
 };
 
 export function SessionDialog({
@@ -25,11 +27,12 @@ export function SessionDialog({
   editing = null,
   initialStartedAt,
   initialEndedAt,
+  initialWeightBefore,
 }: Props) {
   const [startedAt, setStartedAt] = useState(() => Date.now());
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const [note, setNote] = useState("");
-  const [picked, setPicked] = useState<Record<string, number | null>>({});
+  const [picked, setPicked] = useState<Record<string, PickedEntry>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,12 +43,32 @@ export function SessionDialog({
     setStartedAt(editing?.startedAt ?? initialStartedAt ?? Date.now());
     setEndedAt(editing?.endedAt ?? initialEndedAt ?? null);
     setNote(editing?.note ?? "");
+    if (editing) {
+      setPicked(
+        Object.fromEntries(
+          editing.entries.map((e) => [
+            e.actionTypeId,
+            { value: e.value, weightBefore: e.weightBefore, weightAfter: e.weightAfter },
+          ]),
+        ),
+      );
+      return;
+    }
+    // Když se u stopek zadala váha před, rovnou aktivujeme akci s vážením —
+    // rodič vážil, takže krmení evidentně proběhlo.
+    const weighed = actions.find((a) => a.weighing && !a.archived);
     setPicked(
-      Object.fromEntries(
-        (editing?.entries ?? []).map((e) => [e.actionTypeId, e.value]),
-      ),
+      initialWeightBefore != null && weighed
+        ? {
+            [weighed.id]: {
+              value: weighed.kind === "quantity" ? (weighed.defaultValue ?? 0) : null,
+              weightBefore: initialWeightBefore,
+              weightAfter: null,
+            },
+          }
+        : {},
     );
-  }, [open, editing, initialStartedAt, initialEndedAt]);
+  }, [open, editing, initialStartedAt, initialEndedAt, initialWeightBefore, actions]);
 
   // Zrušené akce nabízíme jen tehdy, když u tohohle záznamu už jsou.
   const available = actions.filter((a) => !a.archived || a.id in picked);
@@ -53,15 +76,27 @@ export function SessionDialog({
   const toggle = (action: ActionType) =>
     setPicked((prev) => {
       const next = { ...prev };
-      if (action.id in next) delete next[action.id];
-      else next[action.id] = action.kind === "quantity" ? (action.defaultValue ?? 0) : null;
+      if (action.id in next) {
+        delete next[action.id];
+      } else {
+        next[action.id] = {
+          value: action.kind === "quantity" ? (action.defaultValue ?? 0) : null,
+          weightBefore: null,
+          weightAfter: null,
+        };
+      }
       return next;
     });
 
+  const patch = (actionId: string, values: Partial<PickedEntry>) =>
+    setPicked((prev) => ({ ...prev, [actionId]: { ...prev[actionId], ...values } }));
+
   async function save() {
-    const entries: SessionEntry[] = Object.entries(picked).map(([actionTypeId, value]) => ({
+    const entries: SessionEntry[] = Object.entries(picked).map(([actionTypeId, e]) => ({
       actionTypeId,
-      value,
+      value: e.value,
+      weightBefore: e.weightBefore,
+      weightAfter: e.weightAfter,
     }));
     if (entries.length === 0) {
       setError("Vyber aspoň jednu akci.");
@@ -96,11 +131,9 @@ export function SessionDialog({
               key={action.id}
               action={action}
               active={action.id in picked}
-              value={picked[action.id] ?? null}
+              entry={picked[action.id] ?? null}
               onToggle={() => toggle(action)}
-              onValueChange={(value) =>
-                setPicked((prev) => ({ ...prev, [action.id]: value }))
-              }
+              onChange={(values) => patch(action.id, values)}
             />
           ))}
           {available.length === 0 && (

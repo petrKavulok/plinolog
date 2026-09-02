@@ -20,6 +20,8 @@ export type ActionType = {
   defaultValue: number | null;
   goalPeriod: GoalPeriod;
   goalValue: number | null;
+  /** zapíná zadání váhy miminka před a po (rozdíl ≈ vypité ml) */
+  weighing: boolean;
   sortOrder: number;
   archived: boolean;
 };
@@ -29,6 +31,9 @@ export type ActionTypeInput = Omit<ActionType, "id">;
 export type SessionEntry = {
   actionTypeId: string;
   value: number | null;
+  /** váha miminka v gramech před a po — jen u akcí s vážením */
+  weightBefore: number | null;
+  weightAfter: number | null;
 };
 
 export type CareSession = {

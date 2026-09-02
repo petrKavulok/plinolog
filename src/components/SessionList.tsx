@@ -1,3 +1,4 @@
+import { weighedIntake } from "./ActionBadge";
 import { formatDayLabel, formatDuration, formatNumber, formatTime } from "../lib/format";
 import { groupByDay } from "../lib/stats";
 import type { ActionType, CareSession } from "../lib/types";
@@ -52,6 +53,7 @@ export function SessionList({
                   {session.entries.map((entry) => {
                     const action = byId.get(entry.actionTypeId);
                     if (!action) return null;
+                    const intake = weighedIntake(entry);
                     return (
                       <span
                         key={entry.actionTypeId}
@@ -64,6 +66,11 @@ export function SessionList({
                           <strong className="text-ink">
                             {formatNumber(entry.value)}
                             {action.unit ? ` ${action.unit}` : ""}
+                          </strong>
+                        )}
+                        {intake !== null && (
+                          <strong className="text-ink" title="z rozdílu vah">
+                            ~{formatNumber(intake)} g
                           </strong>
                         )}
                       </span>

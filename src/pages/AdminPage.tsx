@@ -169,6 +169,7 @@ function describe(action: ActionType): string {
   } else {
     parts.push("jen odkliknutí");
   }
+  if (action.weighing) parts.push("vážení před a po");
   if (action.goalPeriod === "none") parts.push("bez dlaždice");
   else {
     const period = action.goalPeriod === "week" ? "týdně" : "denně";

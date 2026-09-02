@@ -15,7 +15,11 @@ export function DashboardPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<CareSession | null>(null);
-  const [prefill, setPrefill] = useState<{ startedAt?: number; endedAt?: number | null }>({});
+  const [prefill, setPrefill] = useState<{
+    startedAt?: number;
+    endedAt?: number | null;
+    weightBefore?: number | null;
+  }>({});
   const [actionError, setActionError] = useState<string | null>(null);
   const [statsDay, setStatsDay] = useState<StatsDay>("today");
 
@@ -31,9 +35,14 @@ export function DashboardPage() {
   }
 
   function finishTimer() {
-    // Stopky doběhly → dialog se otevře s vyplněným začátkem i koncem.
+    // Stopky doběhly → dialog se otevře s vyplněným začátkem, koncem
+    // a případnou váhou před krmením.
     if (timer.startedAt === null) return;
-    openNew({ startedAt: timer.startedAt, endedAt: Date.now() });
+    openNew({
+      startedAt: timer.startedAt,
+      endedAt: Date.now(),
+      weightBefore: timer.weightBefore,
+    });
     timer.stop();
   }
 
@@ -53,6 +62,9 @@ export function DashboardPage() {
     <div className="flex flex-col gap-6 pb-28">
       <FeedingTimer
         startedAt={timer.startedAt}
+        weightBefore={timer.weightBefore}
+        onWeightBefore={timer.setWeightBefore}
+        weighingEnabled={actions.some((a) => a.weighing && !a.archived)}
         onStart={timer.start}
         onFinish={finishTimer}
         onCancel={timer.stop}
@@ -113,6 +125,7 @@ export function DashboardPage() {
         editing={editing}
         initialStartedAt={prefill.startedAt}
         initialEndedAt={prefill.endedAt ?? null}
+        initialWeightBefore={prefill.weightBefore ?? null}
       />
     </div>
   );

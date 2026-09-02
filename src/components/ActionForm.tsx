@@ -17,6 +17,7 @@ const EMPTY: ActionTypeInput = {
   defaultValue: null,
   goalPeriod: "day",
   goalValue: null,
+  weighing: false,
   sortOrder: 0,
   archived: false,
 };
@@ -196,6 +197,22 @@ export function ActionForm({
             />
           </Field>
         )}
+
+        <label className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-3">
+          <input
+            type="checkbox"
+            checked={form.weighing}
+            onChange={(e) => set("weighing", e.target.checked)}
+            className="size-5 accent-[var(--accent)]"
+          />
+          <span className="flex flex-col">
+            <span className="font-medium">Vážení před a po</span>
+            <span className="text-xs text-muted">
+              Nabídne zadání váhy miminka před a po. Rozdíl v gramech odpovídá
+              vypitému množství.
+            </span>
+          </span>
+        </label>
 
         <label className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-3">
           <input

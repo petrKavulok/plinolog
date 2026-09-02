@@ -9,6 +9,9 @@ const { careSessions, sessionEntries, users } = schema;
 const EntryInput = z.object({
   actionTypeId: z.string().min(1),
   value: z.number().nonnegative().nullable().default(null),
+  // váha miminka v gramech před a po (test weighing)
+  weightBefore: z.number().nonnegative().nullable().default(null),
+  weightAfter: z.number().nonnegative().nullable().default(null),
 });
 
 const Input = z.object({
@@ -52,7 +55,13 @@ async function loadSessions(sinceMs: number, limit: number) {
     ...row,
     entries: entries
       .filter((e) => e.sessionId === row.id)
-      .map((e) => ({ id: e.id, actionTypeId: e.actionTypeId, value: e.value })),
+      .map((e) => ({
+        id: e.id,
+        actionTypeId: e.actionTypeId,
+        value: e.value,
+        weightBefore: e.weightBefore,
+        weightAfter: e.weightAfter,
+      })),
   }));
 }
 
@@ -88,6 +97,8 @@ const POST = async (req: Request) => {
         sessionId: id,
         actionTypeId: e.actionTypeId,
         value: e.value,
+        weightBefore: e.weightBefore,
+        weightAfter: e.weightAfter,
         createdAt: now,
       })),
     );
@@ -124,6 +135,8 @@ const PATCH = async (req: Request) => {
           sessionId: id,
           actionTypeId: e.actionTypeId,
           value: e.value,
+          weightBefore: e.weightBefore,
+          weightAfter: e.weightAfter,
           createdAt: now,
         })),
       );
