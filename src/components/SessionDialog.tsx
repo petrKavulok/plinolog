@@ -15,6 +15,8 @@ type Props = {
   /** předvyplněný začátek (běžící stopky) */
   initialStartedAt?: number;
   initialEndedAt?: number | null;
+  /** akce, kterou měřily stopky — po „Hotovo" se předvybere */
+  initialActionId?: string | null;
   /** váha zadaná před krmením u stopek, v gramech */
   initialWeightBefore?: number | null;
 };
@@ -27,6 +29,7 @@ export function SessionDialog({
   editing = null,
   initialStartedAt,
   initialEndedAt,
+  initialActionId,
   initialWeightBefore,
 }: Props) {
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -39,13 +42,13 @@ export function SessionDialog({
   // Vstupy držíme v refu, ať reset závisí jen na otevření dialogu. Kdyby
   // v závislostech bylo `actions`, obnovení dat na pozadí (návrat do appky)
   // by rodiči vymazalo rozdělaný záznam.
-  const latest = useRef({ actions, editing, initialStartedAt, initialEndedAt, initialWeightBefore });
-  latest.current = { actions, editing, initialStartedAt, initialEndedAt, initialWeightBefore };
+  const latest = useRef({ actions, editing, initialStartedAt, initialEndedAt, initialActionId, initialWeightBefore });
+  latest.current = { actions, editing, initialStartedAt, initialEndedAt, initialActionId, initialWeightBefore };
 
   // Při otevření dialog vždy naplníme čerstvými daty.
   useEffect(() => {
     if (!open) return;
-    const { actions, editing, initialStartedAt, initialEndedAt, initialWeightBefore } =
+    const { actions, editing, initialStartedAt, initialEndedAt, initialActionId, initialWeightBefore } =
       latest.current;
 
     setError(null);
@@ -63,20 +66,20 @@ export function SessionDialog({
       );
       return;
     }
-    // Když se u stopek zadala váha před, rovnou aktivujeme akci s vážením —
-    // rodič vážil, takže krmení evidentně proběhlo.
-    const weighed = actions.find((a) => a.weighing && !a.archived);
-    setPicked(
-      initialWeightBefore != null && weighed
-        ? {
-            [weighed.id]: {
-              value: weighed.kind === "quantity" ? (weighed.defaultValue ?? 0) : null,
-              weightBefore: initialWeightBefore,
-              weightAfter: null,
-            },
-          }
-        : {},
-    );
+    // Po doběhnutí stopek předvybereme měřenou akci — krmení evidentně
+    // proběhlo, jinak by je rodič neměřil. Váhu před doplníme, pokud ji zadal.
+    const timed = initialActionId
+      ? actions.find((a) => a.id === initialActionId)
+      : undefined;
+    if (!timed) {
+      setPicked({});
+      return;
+    }
+    const next = activate({}, timed, actions);
+    if (initialWeightBefore != null) {
+      next[timed.id] = { ...next[timed.id], weightBefore: initialWeightBefore };
+    }
+    setPicked(next);
   }, [open]);
 
   // Zrušené akce nabízíme jen tehdy, když u tohohle záznamu už jsou.
@@ -84,31 +87,14 @@ export function SessionDialog({
 
   const toggle = (action: ActionType) =>
     setPicked((prev) => {
-      const next = { ...prev };
-      if (action.id in next) {
+      if (action.id in prev) {
         // Vypnutí navázanou akci nechává být — plínu jsi možná vyměnil
         // z jiného důvodu a nechceme mazat, co rodič sám naklikal.
+        const next = { ...prev };
         delete next[action.id];
         return next;
       }
-
-      // Zapnutí zapne i navázané akce (čůrání → přebalení). Řetěz sledujeme
-      // dál, `seen` chrání před zacyklením přes cizí konfiguraci.
-      const seen = new Set<string>();
-      let current: ActionType | undefined = action;
-      while (current && !seen.has(current.id)) {
-        seen.add(current.id);
-        if (!(current.id in next)) {
-          next[current.id] = {
-            value: current.kind === "quantity" ? (current.defaultValue ?? 0) : null,
-            weightBefore: null,
-            weightAfter: null,
-          };
-        }
-        const nextId: string | null = current.impliesActionId;
-        current = nextId ? actions.find((a) => a.id === nextId) : undefined;
-      }
-      return next;
+      return activate(prev, action, actions);
     });
 
   const patch = (actionId: string, values: Partial<PickedEntry>) =>
@@ -218,4 +204,32 @@ export function SessionDialog({
       </div>
     </Modal>
   );
+}
+
+/**
+ * Zapne akci i vše, co má navázané (čůrání → přebalení). Řetěz sledujeme
+ * dál, `seen` chrání před zacyklením přes cizí konfiguraci.
+ */
+function activate(
+  base: Record<string, PickedEntry>,
+  action: ActionType,
+  actions: ActionType[],
+): Record<string, PickedEntry> {
+  const next = { ...base };
+  const seen = new Set<string>();
+  let current: ActionType | undefined = action;
+
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id);
+    if (!(current.id in next)) {
+      next[current.id] = {
+        value: current.kind === "quantity" ? (current.defaultValue ?? 0) : null,
+        weightBefore: null,
+        weightAfter: null,
+      };
+    }
+    const nextId: string | null = current.impliesActionId;
+    current = nextId ? actions.find((a) => a.id === nextId) : undefined;
+  }
+  return next;
 }

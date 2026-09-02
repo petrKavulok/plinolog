@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ActionType } from "../lib/types";
 import { formatStopwatch, formatTime } from "../lib/format";
 import { playAlarm, unlockAudio, vibrate } from "../lib/sound";
 import { useWakeLock } from "../state/useWakeLock";
@@ -60,7 +61,7 @@ export function FeedingTimer({
   startedAt,
   weightBefore,
   onWeightBefore,
-  weighingEnabled,
+  action,
   onStart,
   onFinish,
   onCancel,
@@ -68,8 +69,8 @@ export function FeedingTimer({
   startedAt: number | null;
   weightBefore: number | null;
   onWeightBefore: (value: number | null) => void;
-  /** je aspoň jedna akce s vážením? jinak políčko vůbec nenabízíme */
-  weighingEnabled: boolean;
+  /** akce, kterou stopky měří — dává jim název i políčko na váhu */
+  action: ActionType | null;
   onStart: () => void;
   onFinish: () => void;
   onCancel: () => void;
@@ -121,7 +122,7 @@ export function FeedingTimer({
   if (startedAt === null) {
     return (
       <Button size="lg" onClick={onStart} className="w-full">
-        ⏱️ Začít krmení
+        ⏱️ Začít {action ? action.label.toLowerCase() : "krmení"}
       </Button>
     );
   }
@@ -162,7 +163,7 @@ export function FeedingTimer({
       </button>
       </div>
 
-      {weighingEnabled &&
+      {action?.weighing &&
         (weightOpen || weightBefore !== null ? (
           <label className="animate-fade flex items-center gap-2">
             <span className="text-sm text-muted">Váha před (g)</span>

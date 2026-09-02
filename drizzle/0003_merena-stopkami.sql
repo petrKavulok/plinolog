@@ -1,0 +1,1 @@
+ALTER TABLE "action_type" ADD COLUMN "timed" boolean DEFAULT false NOT NULL;

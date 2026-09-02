@@ -18,6 +18,7 @@ const EMPTY: ActionTypeInput = {
   goalPeriod: "day",
   goalValue: null,
   weighing: false,
+  timed: false,
   impliesActionId: null,
   sortOrder: 0,
   archived: false,
@@ -201,6 +202,22 @@ export function ActionForm({
             />
           </Field>
         )}
+
+        <label className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-3">
+          <input
+            type="checkbox"
+            checked={form.timed}
+            onChange={(e) => set("timed", e.target.checked)}
+            className="size-5 accent-[var(--accent)]"
+          />
+          <span className="flex flex-col">
+            <span className="font-medium">Měří se stopkami</span>
+            <span className="text-xs text-muted">
+              Tlačítko stopek na přehledu bude patřit téhle akci a po „Hotovo"
+              se rovnou předvybere.
+            </span>
+          </span>
+        </label>
 
         <Field
           label="Zapnout s ní také"

@@ -170,6 +170,7 @@ function describe(action: ActionType, all: ActionType[]): string {
   } else {
     parts.push("jen odkliknutí");
   }
+  if (action.timed) parts.push("měří se stopkami");
   if (action.weighing) parts.push("vážení před a po");
   const implied = all.find((a) => a.id === action.impliesActionId);
   if (implied) parts.push(`zapne i ${implied.label.toLowerCase()}`);

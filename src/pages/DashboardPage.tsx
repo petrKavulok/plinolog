@@ -18,10 +18,21 @@ export function DashboardPage() {
   const [prefill, setPrefill] = useState<{
     startedAt?: number;
     endedAt?: number | null;
+    actionId?: string | null;
     weightBefore?: number | null;
   }>({});
   const [actionError, setActionError] = useState<string | null>(null);
   const [statsDay, setStatsDay] = useState<StatsDay>("today");
+
+  // Akce označená „měří se stopkami". Dokud si ji nikdo neoznačí, spolehneme
+  // se na akci s vážením — ať to funguje i bez zásahu ve správě akcí.
+  const timedAction = useMemo(
+    () =>
+      actions.find((a) => a.timed && !a.archived) ??
+      actions.find((a) => a.weighing && !a.archived) ??
+      null,
+    [actions],
+  );
 
   const stats = useMemo(
     () => summarize(actions, sessions, statsDay),
@@ -41,6 +52,7 @@ export function DashboardPage() {
     openNew({
       startedAt: timer.startedAt,
       endedAt: Date.now(),
+      actionId: timedAction?.id ?? null,
       weightBefore: timer.weightBefore,
     });
     timer.stop();
@@ -64,7 +76,7 @@ export function DashboardPage() {
         startedAt={timer.startedAt}
         weightBefore={timer.weightBefore}
         onWeightBefore={timer.setWeightBefore}
-        weighingEnabled={actions.some((a) => a.weighing && !a.archived)}
+        action={timedAction}
         onStart={timer.start}
         onFinish={finishTimer}
         onCancel={timer.stop}
@@ -125,6 +137,7 @@ export function DashboardPage() {
         editing={editing}
         initialStartedAt={prefill.startedAt}
         initialEndedAt={prefill.endedAt ?? null}
+        initialActionId={prefill.actionId ?? null}
         initialWeightBefore={prefill.weightBefore ?? null}
       />
     </div>
