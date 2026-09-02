@@ -108,7 +108,7 @@ export function AdminPage() {
                   </span>
                 )}
               </p>
-              <p className="text-xs text-muted">{describe(action)}</p>
+              <p className="text-xs text-muted">{describe(action, actions)}</p>
             </div>
 
             {/* Na úzkém displeji se tlačítka zalomí pod text, ať se název nekrátí. */}
@@ -155,13 +155,14 @@ export function AdminPage() {
         onClose={() => setFormOpen(false)}
         onSubmit={submit}
         editing={editing}
+        actions={actions}
       />
     </div>
   );
 }
 
 /** Krátký popis nastavení akce do seznamu. */
-function describe(action: ActionType): string {
+function describe(action: ActionType, all: ActionType[]): string {
   const parts: string[] = [];
   if (action.kind === "quantity") {
     parts.push(`množství${action.unit ? ` (${action.unit})` : ""}`);
@@ -170,6 +171,8 @@ function describe(action: ActionType): string {
     parts.push("jen odkliknutí");
   }
   if (action.weighing) parts.push("vážení před a po");
+  const implied = all.find((a) => a.id === action.impliesActionId);
+  if (implied) parts.push(`zapne i ${implied.label.toLowerCase()}`);
   if (action.goalPeriod === "none") parts.push("bez dlaždice");
   else {
     const period = action.goalPeriod === "week" ? "týdně" : "denně";

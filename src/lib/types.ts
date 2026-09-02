@@ -22,6 +22,8 @@ export type ActionType = {
   goalValue: number | null;
   /** zapíná zadání váhy miminka před a po (rozdíl ≈ vypité ml) */
   weighing: boolean;
+  /** po zapnutí téhle akce se zapne i tato další (čůrání → přebalení) */
+  impliesActionId: string | null;
   sortOrder: number;
   archived: boolean;
 };

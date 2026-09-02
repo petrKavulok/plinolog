@@ -18,6 +18,7 @@ const EMPTY: ActionTypeInput = {
   goalPeriod: "day",
   goalValue: null,
   weighing: false,
+  impliesActionId: null,
   sortOrder: 0,
   archived: false,
 };
@@ -27,11 +28,14 @@ export function ActionForm({
   onClose,
   onSubmit,
   editing,
+  actions,
 }: {
   open: boolean;
   onClose: () => void;
   onSubmit: (input: ActionTypeInput) => Promise<void>;
   editing: ActionType | null;
+  /** ostatní akce — pro volbu navázané akce */
+  actions: ActionType[];
 }) {
   const [form, setForm] = useState<ActionTypeInput>(EMPTY);
   const [presetsText, setPresetsText] = useState("");
@@ -197,6 +201,26 @@ export function ActionForm({
             />
           </Field>
         )}
+
+        <Field
+          label="Zapnout s ní také"
+          hint="Třeba u čůrání a kakání se hodí přebalení — zaškrtne se samo."
+        >
+          <select
+            value={form.impliesActionId ?? ""}
+            onChange={(e) => set("impliesActionId", e.target.value || null)}
+            className={inputClass}
+          >
+            <option value="">nic</option>
+            {actions
+              .filter((a) => a.id !== editing?.id && !a.archived)
+              .map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.emoji} {a.label}
+                </option>
+              ))}
+          </select>
+        </Field>
 
         <label className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-3">
           <input

@@ -1,0 +1,1 @@
+ALTER TABLE "action_type" ADD COLUMN "implies_action_id" text;

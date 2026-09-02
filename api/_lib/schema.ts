@@ -44,6 +44,10 @@ export const actionTypes = pgTable("action_type", {
   goalValue: real("goal_value"),
   // u kojení dává smysl zvážit miminko před a po (rozdíl ≈ vypité ml)
   weighing: boolean("weighing").notNull().default(false),
+  // po zapnutí téhle akce se v dialogu zapne i tahle další
+  // (čůrání → přebalení). Bez FK: mazání akce je stejně soft delete
+  // a osiřelé id dialog jen ignoruje.
+  impliesActionId: text("implies_action_id"),
   sortOrder: integer("sort_order").notNull().default(0),
   // "zrušená" akce — zůstane u historických záznamů, ale nenabízí se
   archived: boolean("archived").notNull().default(false),

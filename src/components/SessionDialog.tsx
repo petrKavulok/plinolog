@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { formatDuration, fromLocalInput, toLocalInput } from "../lib/format";
 import type { ActionType, CareSession, SessionEntry } from "../lib/types";
@@ -36,9 +36,18 @@ export function SessionDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Vstupy držíme v refu, ať reset závisí jen na otevření dialogu. Kdyby
+  // v závislostech bylo `actions`, obnovení dat na pozadí (návrat do appky)
+  // by rodiči vymazalo rozdělaný záznam.
+  const latest = useRef({ actions, editing, initialStartedAt, initialEndedAt, initialWeightBefore });
+  latest.current = { actions, editing, initialStartedAt, initialEndedAt, initialWeightBefore };
+
   // Při otevření dialog vždy naplníme čerstvými daty.
   useEffect(() => {
     if (!open) return;
+    const { actions, editing, initialStartedAt, initialEndedAt, initialWeightBefore } =
+      latest.current;
+
     setError(null);
     setStartedAt(editing?.startedAt ?? initialStartedAt ?? Date.now());
     setEndedAt(editing?.endedAt ?? initialEndedAt ?? null);
@@ -68,7 +77,7 @@ export function SessionDialog({
           }
         : {},
     );
-  }, [open, editing, initialStartedAt, initialEndedAt, initialWeightBefore, actions]);
+  }, [open]);
 
   // Zrušené akce nabízíme jen tehdy, když u tohohle záznamu už jsou.
   const available = actions.filter((a) => !a.archived || a.id in picked);
@@ -77,13 +86,27 @@ export function SessionDialog({
     setPicked((prev) => {
       const next = { ...prev };
       if (action.id in next) {
+        // Vypnutí navázanou akci nechává být — plínu jsi možná vyměnil
+        // z jiného důvodu a nechceme mazat, co rodič sám naklikal.
         delete next[action.id];
-      } else {
-        next[action.id] = {
-          value: action.kind === "quantity" ? (action.defaultValue ?? 0) : null,
-          weightBefore: null,
-          weightAfter: null,
-        };
+        return next;
+      }
+
+      // Zapnutí zapne i navázané akce (čůrání → přebalení). Řetěz sledujeme
+      // dál, `seen` chrání před zacyklením přes cizí konfiguraci.
+      const seen = new Set<string>();
+      let current: ActionType | undefined = action;
+      while (current && !seen.has(current.id)) {
+        seen.add(current.id);
+        if (!(current.id in next)) {
+          next[current.id] = {
+            value: current.kind === "quantity" ? (current.defaultValue ?? 0) : null,
+            weightBefore: null,
+            weightAfter: null,
+          };
+        }
+        const nextId: string | null = current.impliesActionId;
+        current = nextId ? actions.find((a) => a.id === nextId) : undefined;
       }
       return next;
     });

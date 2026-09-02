@@ -16,6 +16,7 @@ const Input = z.object({
   goalPeriod: z.enum(["none", "day", "week"]),
   goalValue: z.number().nonnegative().nullable().default(null),
   weighing: z.boolean().default(false),
+  impliesActionId: z.string().nullable().default(null),
   sortOrder: z.number().int().default(0),
   archived: z.boolean().default(false),
 });
@@ -59,10 +60,16 @@ const PATCH = async (req: Request) => {
 const DELETE = async (req: Request) => {
   await requireUser(req);
   const id = idFromUrl(req);
+  const now = Date.now();
   await db()
     .update(actionTypes)
-    .set({ deleted: true, updatedAt: Date.now() })
+    .set({ deleted: true, updatedAt: now })
     .where(eq(actionTypes.id, id));
+  // Ať po smazané akci nezůstane odkaz z jiné akce.
+  await db()
+    .update(actionTypes)
+    .set({ impliesActionId: null, updatedAt: now })
+    .where(eq(actionTypes.impliesActionId, id));
   return json({ ok: true });
 };
 
